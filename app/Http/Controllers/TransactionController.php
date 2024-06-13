@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class TransactionController extends Controller
 {
@@ -13,8 +14,17 @@ class TransactionController extends Controller
 
         $transactions = Transaction::where('user_id', Auth::user()->id)->get();
 
-        $transactions->transform(function ($transaction, $key) {
-            $transaction->product = collect(config('products'))->firstWhere('id', $transaction->product_id);
+        $response = Http::get('http://localhost:8000/api/products');
+
+        if ($response->successful()) {
+            $products = $response->json();
+            $products=$products['data'];
+        } else {
+            $products = [];
+        }
+
+        $transactions->transform(function ($transaction, $key) use ($products) {
+            $transaction->product = collect($products)->firstWhere('id', $transaction->product_id);
             return $transaction;
         });
 

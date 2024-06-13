@@ -1,14 +1,15 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Models\Products;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
-class ProductsController extends Controller
+class ProductsApiController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -39,6 +40,7 @@ class ProductsController extends Controller
             'name'     => 'required',
             'price'   => 'required',
             'description'   => 'required',
+            'stock'   => 'required',
         ]);
 
          if ($validator->fails()) {
@@ -53,6 +55,7 @@ class ProductsController extends Controller
             'name'     => $request->name,
             'price'   => $request->price,
             'description'   => $request->description,
+            'stock'   => $request->stock
         ]);
 
         return new ProductResource(true, 'Product Created', $product);
@@ -86,13 +89,13 @@ class ProductsController extends Controller
      */
     public function update(Request $request,$id)
     {
-        //
 
         $validator = Validator::make($request->all(), [
             'image'     => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'name'     => 'required',
             'price'   => 'required',
             'description'   => 'required',
+            'stock'   => 'required',
         ]);
 
          if ($validator->fails()) {
@@ -100,19 +103,29 @@ class ProductsController extends Controller
         }
 
         $product = Products::find($id);
-        if($product){
+        
+        if($request->hasFile('image')){
             $image = $request->file('image');
             $image->storeAs('public/products', $image->hashName());
+
+            Storage::delete('public/products/'.$product->image);
+
             $product->update([
                 'image'     => $image->hashName(),
                 'name'     => $request->name,
                 'price'   => $request->price,
                 'description'   => $request->description,
+                'stock'   => $request->stock
             ]);
-            return new ProductResource(true, 'Product Updated', $product);
         } else {
-            return new ProductResource(false, 'Product Not Found', null);
+            $product->update([
+                'name'     => $request->name,
+                'price'   => $request->price,
+                'description'   => $request->description,
+                'stock'   => $request->stock
+            ]);
         }
+        return new ProductResource(true, 'Product Updated', $product);
     
 
     }

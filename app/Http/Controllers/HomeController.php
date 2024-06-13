@@ -3,23 +3,28 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class HomeController extends Controller
 {
 
     public function index()
     {
-        $products = config('products');
+        try {
+            $response = Http::get('http://localhost:8000/api/products');
 
-        return view('home', compact('products'));
+            if ($response->successful()) {
+                $products = $response->json();
+                $products=$products['data'];
+            } else {
+                $products = [];
+            }
+
+        } catch (\Exception $e) {
+            $products = [];
+        }
+        return view('home', ['products' => $products]);
     }
 
-    public function show($id)
-    {
-        $products = config('products');
-
-        $product = collect($products)->firstWhere('id', $id);
-
-        return view('product', compact('product'));
-    }
+  
 }

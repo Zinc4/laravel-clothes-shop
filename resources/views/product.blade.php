@@ -8,7 +8,7 @@
             <a href="{{ route('home') }}" class="btn btn-primary">Kembali</a>
             <div class="row mt-3">
                 <div class="col-md-4">
-                    <img src="{{ $product['image'] }}" class="img-fluid shadow-sm border border-secondary-subtle"
+                    <img src="{{ asset('storage/products/' . $product['image']) }}" class="img-fluid shadow-sm border border-secondary-subtle"
                         alt="{{ $product['name'] }}">
                 </div>
                 <div class="col-md-8">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 
 class CheckoutController extends Controller
 {
@@ -50,7 +51,14 @@ class CheckoutController extends Controller
 
     public function checkout(Transaction $transaction)
     {
-        $products = config('products');
+        $response = Http::get('http://localhost:8000/api/products');
+
+        if ($response->successful()) {
+            $products = $response->json();
+            $products=$products['data'];
+        } else {
+            $products = [];
+        }
         $product = collect($products)->firstWhere('id', $transaction->product_id);
 
         return view('checkout',  compact('transaction', 'product'));
